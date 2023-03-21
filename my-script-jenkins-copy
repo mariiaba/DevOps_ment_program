@@ -1,0 +1,101 @@
+#!/bin/bash
+
+#Task:
+#The script should be able to :
+#-install jenkins;
+#-delete jenkins;
+#-update jenkins;
+#-restart jenkins;
+
+#Style:
+#-each logical block released as a function;
+#-you have implemented case ctructure to interact with arguments;
+#-you should launch script such as sh./my-script-jenkins - action install.
+
+#declaration of function to install jenkins
+
+  INSTALL_FUNCTION () {
+    echo "Installing of Jenkins"
+    curl -fsSL https://pkg.jenkins.io/debian/jenkins.io.key | sudo tee \
+    /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+    echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+    https://pkg.jenkins.io/debian binary/ | sudo tee \
+     /etc/apt/sources.list.d/jenkins.list > /dev/null
+    sudo apt-get update
+    sudo apt-get -y install fontconfig openjdk-11-jre
+    sudo apt-get -y install jenkins
+    echo "Starting and enabling jenkins"
+    sudo systemctl enable jenkins
+    sudo systemctl start jenkins
+    sudo systemctl status jenkins
+  }
+
+#declaration of function to delete jenkins
+
+  DELETE_FUNCTION () {
+    sudo systemctl stop jenkins
+    sudo apt-get -y remove jenkins
+    sudo apt-get remove --purge jenkins
+    sudo rm -rf /var/lib/jenkins
+    sudo rm -rf /root/.jenkins/
+  }
+
+#declaration of function to update jenkins
+
+  UPDATE_FUNCTION () {
+    echo "Stopping Jenkins Service"
+    sudo systemctl stop jenkins
+    echo "Getting latest Jenkins .war file"
+    sudo wget https://updates.jenkins-ci.org/download/war/latest/jenkins.war
+    echo "Starting Jenkins"
+    sudo systemctl start jenkins
+    sudo systemctl status jenkins
+  }
+
+#declaration of function to restart jenkins
+
+  RESTART_FUNCTION () {
+    sudo systemctl start jenkins.service
+    sudo systemctl stop jenkins.service
+    echo "Stopping Jenkins"
+    sudo systemctl restart jenkins.service
+    echo "Restarting Jenkins"
+  }
+
+#chosing the action by user and calling the functions
+
+  #echo "JENKINS ACTIONS"
+  #echo "---------------"
+  #echo "1)To install Jenkins"
+  #echo "2)To delete Jenkins"
+  #echo "3)To update Jenkins"
+  #echo "4)To restart Jenkins"
+  #echo ""
+  #echo "Enter choice: "
+  #echo -n "action --$1"
+  #read JENKINSACTIONS
+
+  case "$2" in
+    install)
+      echo "Installing Jenkins in progress..."
+      INSTALL_FUNCTION
+      ;;
+    delete)
+      echo "Deleting Jenking in progress..."
+      DELETE_FUNCTION
+      echo "Jenkins deleted"
+      ;;
+    update)
+      echo "Updating Jenkins in progress..."
+      UPDATE_FUNCTION
+      echo "Jenkins updated"
+      ;;
+   restart)
+      echo "Restating Jenkins in progress..."
+      RESTART_FUNCTION
+      echo "Jenkins restarted"
+      ;;
+    *)
+     echo "Please try again"
+  esac
+
